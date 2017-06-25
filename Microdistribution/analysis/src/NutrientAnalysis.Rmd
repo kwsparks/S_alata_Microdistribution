@@ -2,10 +2,19 @@
 title: Analysis of S. alata Microdistribution at Buttercup Flats, MS
 author: "[K. William Sparks](https://github.com/kwsparks)"
 date: "`r Sys.Date()`"
-output: html_document
+output:
+  html_document:
+    fig_width:  8
+    fig_height: 4
+
 ---
 
-## Introduction
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment="")
+knitr::opts_knit$set(global.par = TRUE)
+```
+
+# Introduction
 
 Patterned distributions of individual plant species and species groups are likely to reflect patterns in environmental conditions and constraints imposed on plant survival, growth, and reproductive ability by abiotic and biotic factors, including physiological tolerance of levels of various environmental conditions (e.g., soil moisture, [Ca], wind speed), competition with other plants, and interactions with herbivores and pathogens. If variation in the abundance of focal species characterized by different growth forms or physiologies is correlated with environmental conditions, and not due merely to limited plant dispersal, it can suggest that those forms or physiologies are adapted to different states or levels of those conditions.
 
@@ -13,163 +22,265 @@ Sarracenia is a genus of 11 species of carnivorous plants, occurring on the coas
 
 Givnish (personal communication) observed a patchy distribution of S. alata in the extensive wet, sandy pine savannas at Buttercup Flats near Wiggins, Mississippi in the DeSoto National Forest. Such wet pine savannas of the Gulf Coastal plain of the United States contain an extraordinary diversity and abundance of carnivorous plants occurring down slope from mesic longleaf pine (Pinus palustris Mill.) dominated uplands (Brewer, 1999). On these sites, S. alata tends to co-occur with crayfish mounds made of clay material (Givnish, pers. obs.), suggesting that the plant’s locally patchy distribution may have originated from a hidden variability in the physical composition of the substrate (Brewer, 1999). Specifically, the presence of clay lenses in the subsoil may create localized anoxic zones that prevent nitrogen fixation by soil microbes, leading to wet, N-poor microsites that favor the establishment of carnivorous plants, due to low levels of soil nitrate and hostile, anoxic conditions that can work against root uptake of soil nutrients generally. I therefore aim to test the hypothesis that scattered but hidden clay lenses help generate the patchy distribution of Sarracenia, creating zones that are poor in nitrate and dissolved oxygen.
 
-![](/home/sparks/Desktop/Thesis_Projects/Microdistribution/analysis/images/pattern1.JPG)
+![pattern1](../images/pattern1.JPG)
 
 Thirteen transects crossing the described vegetation pattern were set up randomly within in the savanna at Buttercup Flats facing a compass bearing of 160 degrees. Each transect contained a pitcher-absent microsite in the middle and 10-m of pitcher-present microsites on each end. Transects 11, 12, and 13 intersected multiple pitcher-absent patches and were therefore evaluated at more locations compared to the other transects. Soil and tissue nutrients, ground Coverage of all species, and soil clay content clay content were measured at these sites using a stratified random design.
 
-##Analysis of Soil Nutrients
+# Analysis of Soil Nutrients
 
-Plant Root Simulators (PRS, available from [Western Ag](https://www.westernag.ca/)) with cation and anion exchange resins be planted in pairs of three in two locations along the transect: 1) a random location at the pitcher-present microsite in the beginning ten meters of the transect and 2) a random location in each pitcher-absent microsite contained within the transect. Probe burial time was 46-47 days. All soil nutrients were measured in $\mu$g/$cm^2$.
+Plant Root Simulators (PRS, available from [Western Ag](https://www.westernag.ca/)) with cation and anion exchange resins be planted in pairs of three in two locations along the transect: 1) a random location at the pitcher-present microsite in the beginning ten meters of the transect and 2) a random location in each pitcher-absent microsite contained within the transect. Probe burial time was 46-47 days.
+All soil nutrients were measured in μg/cm<sup>2</sup>.
 
-Each nutrient is be evaluated independently for its interaction with microsite type (pitcher plant-present, pitcher plant-absent). 
+Each nutrient is evaluated independently for its association with microsite type
+(pitcher plant-present, pitcher plant-absent).
 
-```{r include=FALSE}
-setwd("/home/sparks/Desktop/Thesis_Projects/Microdistribution/analysis/cleaned/")
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = "../cleaned/") # directory for the data
+# changes working directory for all subsequent chunks
+# relative path: to work for everyone.
+# assumes this Rmd file is started from xxx/analysis/src/
+#             and the data files are in xxx/analysis/cleaned/
+par(mar=c(3.1,3.1,1.8,1.1), mgp=c(1.4,.4,0), tck=-0.01)
 ```
 
 ```{r}
-  soilNPK <- read.csv(file = "/home/sparks/Desktop/Thesis_Projects/Microdistribution/analysis/cleaned/soilNPK.csv", header = TRUE)
+soilNPK = read.csv(file = "soilNPK.csv", header = TRUE)
+soilNPK$Transect = factor(soilNPK$Transect) # interpreted as factor, not numerical values
+str(soilNPK)
 ```
 
-### Soil Potassium
+## Soil Potassium
 
-```{r}
-hist(soilNPK$K, main="")
-```
-The histogran for soil potassium concentrations is slightly right-skewed.
+### data visualization
 
-Q-Q plots were used to test for normality because the Shapiro-Wilk test is not powerful at small sample size (n=31).
-
-```{r}
-qqnorm(soilNPK$K, main = '')
+```{r, fig.width=8, fig.height=4}
+layout(matrix(1:2,1,2))
+hist(soilNPK$K, main="", col="tan", breaks=20)
+qqnorm(soilNPK$K, main = '', ylab="soil K")
 qqline(soilNPK$K)
 ```
 
-Sample quantiles do not show noticible deviation from Q-Q plot does not suggest any significant deviations from normality. Three outliers can be seen in the Q-Q plots.
+The histogran for soil potassium concentrations is slightly right-skewed.
+Q-Q plots were used to test for normality because the Shapiro-Wilk test is not powerful at small sample size (n=31).
+Sample quantiles do not show noticible deviation from Q-Q plot does not suggest any significant deviations from normality.
+Three outliers (large K values) can be seen in the Q-Q plots.
+they are on 3 different transects, but all in the "-" microsite: pitcher plants absent
+(note that one of these transects, #13, has another observation for "-" microsite)
 
-#### Nutrient-Microsite Interaction
+```{r}
+subset(soilNPK, K>200 )
+```
 
-At transects 11, 12, and 13, multiple data points (for soil nutrients only) were collected for pitcher plant-absent microsites. It is necessary to sum these pitcher plant-absent data points for their respective transects to ensure that the subsequent paired t-test is perfomed with equal sample sizes.
+Let's now just visualize the association between potassium and microsite,
+and also see the pairing by transect (transect 1 is in red, transect 4 is in blue).
+
+```{r}
+transect.color = rep("black",13)
+transect.color[c(1,4)] = c("red", "blue")
+layout(matrix(1:2,1,2))
+with(soilNPK, interaction.plot(Microsite, Transect, K, legend=FALSE, col=transect.color))
+plot(K~Microsite, data=soilNPK)
+```
+
+The outliers are much "less" outliers when we consider the log(potassium) values:
+```{r, fig.height=8}
+layout(matrix(1:4,2,2, byrow=T))
+with(soilNPK, hist(log(K), main="", col="tan", breaks=20))
+with(soilNPK, qqnorm(log(K), main = '', ylab="soil log(K)"))
+with(soilNPK, interaction.plot(Microsite, Transect, log(K), legend=FALSE, col=transect.color))
+plot(log(K)~Microsite, data=soilNPK)
+```
+
+From this, 4 transects have K higher in the pitcher-present area,
+and 9 transects have K higher in the pitcher-absent area.
+
+### statistical analysis
+
+If we analyze the log values, it seems that (at first sight) we can use a t-test
+or a 2-way ANOVA-based method. We will double-check the normality of residuals after
+we get these residuals.
+
+At transects 11, 12, and 13, multiple data points (for soil nutrients only) were collected for pitcher plant-absent microsites.
+It is necessary to average these pitcher plant-absent data points for their respective transects to perform a t-test (which requires a single value per transect per microsite).
+This averaging is not necessary with a 2-way ANOVA-based approach.
 
 A new vector is created specifically for the paired t-test.
 ```{r}
-K_PairedReady <- soilNPK$K[c(1:21,26,27)]
-```
-
-Data points for pitcher plant-absent microsites are summed for each transect.
-```{r}
-Kminus11 <- sum(soilNPK$K[22:25])
-Kminus12 <- sum(soilNPK$K[27:28])
-Kminus13 <- sum(soilNPK$K[30:31])
-```
-
-These summed values are appended to the vector at the correct index.
-```{r}
-K_PairedReady <- append(K_PairedReady, Kminus11, after = 21)
-K_PairedReady <- append(K_PairedReady, Kminus12, after = 27)
-K_PairedReady <- append(K_PairedReady, Kminus13, after = 29)
-```
-
-Soil Potassium measurements ate then separated into pitcher plant-present and pitcher plant-absent microsites.
-
-```{r}
-K_minus <- K_PairedReady[c(TRUE, FALSE)]
-K_plus <- K_PairedReady[c(FALSE, TRUE)]
+table(soilNPK[1:2])
+logKmeans = with(soilNPK, tapply(log(K), Microsite:Transect, mean))
+K_minus = logKmeans[1:13]
+K_plus = logKmeans[14:26]
+K_minus  # log values, in fact
+K_plus
 ```
 
 A paired t-test is performed on pitcher plant-absent and pitcher plant-present K soil concentrations.
 ```{r}
 t.test(K_plus, K_minus, paired = TRUE)
 ```
-K concentrations are not significantly different between pitcher-present and pitcher-absent microsites based on a critical value of 0.05.
 
+K concentrations are not significantly different between
+pitcher-present and pitcher-absent microsites (p=0.47).  
+We can do this again with the non-transformed K values, but there is still no
+evidence of association (p=0.23).
 
-A linear model is also constructed as both a supplement and a comparison to the paired t-test.
-
-Transect number is explicitly stated to be a factor.
 ```{r}
-as.factor(soilNPK$Transect)
-str(soilNPK)
+Kmeans = with(soilNPK, tapply(K, Microsite:Transect, mean))
+K_minus = Kmeans[1:13]
+K_plus = Kmeans[14:26]
+t.test(K_plus, K_minus, paired=TRUE)
 ```
 
-The linear model is constructed with K as the dependent variable, transect number as the first factor, and microsite as the second factor.
-```{r}
-fit <- lm(soilNPK$K ~ soilNPK$Transect + soilNPK$Microsite)
+A linear model is also constructed as both a supplement and a comparison to the paired t-test. We get practically the same p-values, but we also get to see diagnostic plots
+to confirm that assumptions are met reasonably well.
+
+The linear model is constructed with K (or log(K)) as the dependent variable,
+transect as the first factor, and microsite as the second factor.
+We first use the raw K values, not transformed.
+The residuals look fairly normally distributed, but the first residual plot
+does not look great.  
+No evidence for association between K and microsite (p=0.22).
+```{r, fig.height=3, fig.width=12}
+fit <- lm(K ~ Transect + Microsite, data=soilNPK)
 anova(fit)
+drop1(fit, test="F")
+layout(matrix(1:4,1,4, byrow=T))
 plot(fit)
-summary(fit)
 ```
-Small F-statistic suggests low predictive power for model.
 
-Variances appear to be homogeneous. Normal Q-Q plot does not show any significant deviation from normality. Two data points have high leverage.
-
-
-A supplemental two way interaction plot between nutrient concentration and microsite type is constructed as a visual aid to the above tests.
-
-```{r}
-interaction.plot(soilNPK$Microsite, soilNPK$Transect, soilNPK$K, legend=FALSE)
+We can re-do this analysis, using log(K) values this time.
+Still no evidence of an association (p=0.47).
+The residual plots look better (more homogeneous variance),
+so this analysis is preferred over the analysis of K (untransformed).
+```{r, fig.height=3, fig.width=12}
+fit <- lm(log(K) ~ Transect + Microsite, data=soilNPK)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
 ```
-The two-way interaction plot shows weak interactions between K and microsite.
 
+## Soil Nitrogren
 
-#### Soil Nitrogren
-
-Soil nitrogen is evaluated as both Total Nitrogen and its components:
-
+Soil nitrogen is evaluated as both Total Nitrogen and its components:  
 Soil Total Nitrogen is the sum of soil nitrate (NO3) and soil ammonium (NH4).
 
 ```{r}
 soilNPK$TN <- soilNPK$NO3 + soilNPK$NH4
 ```
 
-###Analysis of Sedge tissue nutrients
+# Analysis of Sedge tissue nutrients
 
 Aboveground biomass of 6 species of sedges in the Rhynchospora genus (R. megalocarpa, R. compressa, R. gracilenta, R. plumosa, R. rariflora, R. harveyi var harveyi) were collected, dried, and analyzed for % N, P, and K content, as a measure of the availability of these nutrients to non-carnivorous plants. All species are C3.
 
 All tissue nutrients were measured in % of Aboveground Dry Mass.
+```{r}
+tissuenutrients <- read.table("tissueNPK.csv", header = TRUE, sep=",")
+tissuenutrients$Transect = factor(tissuenutrients$Transect)
+str(tissuenutrients)
+```
 
-#### NPK Limitation Diagram
+## NPK Limitation Diagram
 
 N:P, N:K, and P:K ratios from tissue nutrient measurements are compared to critical ratios put forth by Olde Venterink et al. (2003) to determine whether plants are P or P + N limited (N:P > 14.5, K:P >3.4), K or K + N limited (N:K > 3.1, K:P < 3.4), or N limited (N:P < 14.5, N:K < 2.1). The relationship between N:P:K ratios and type of nutrient limitation is illustrated in the subsequent triaxial graph.
 
-```{r}
-tissuenutrients <- read.table("/home/sparks/Desktop/Thesis_Projects/Microdistribution/analysis/cleaned/tissueNPK.csv", header = TRUE, sep=",")
 
+```{r, message=FALSE}
 library(ggtern)
-
 plot <- ggtern(data = tissuenutrients, aes(x = TN, y = P, z = K)) +
-
-geom_Tisoprop(data=N/P, value=0.2, color='darkgreen') +
-  
-geom_Risoprop(data=P/K, value=0.145, color='darkblue') +
-
-geom_Lisoprop(data=N/K, value=0.4, color='darkred') +
-
-geom_point(aes(fill = Microsite),
-
- 
-size = 6,
-
-shape = 21,
-
-color = "black") +
-
-ggtitle("NPK limitation diagram") +
-
-labs(fill = "Microsite") +
-
-theme_rgbw() +
-
-theme(legend.position = c(0,1),
-
-legend.justification = c(1, 1))
-
+  geom_Tisoprop(value=.3226, color='darkgreen') + # T=Top apex: K/(K+N)=.3226 i.e N/K=1/.3226-1=2.1
+  geom_Tisoprop(value=.2439, color='lightgreen') + # Top apex: K/(K+N)=.2439 i.e N/K=1/.2439-1=3.1
+  geom_Risoprop(value=.06452, color='darkblue') + # Right apex P/(P+N)=0.145: N/P=1/.06452-1=14.5
+  geom_Lisoprop(value=.7727273, color='darkred') + # Left apex K/(K+P)=: P/K=1/0.7727273-1=, K/P=1/0.2941=3.4
+  geom_point(aes(fill = Microsite),
+             size = 2,
+             shape = 21,
+             color = "black") +
+  ggtitle("NPK limitation diagram") +
+  labs(fill = "Microsite") +
+  theme_rgbw() +
+  theme(legend.position = c(0,1),
+        legend.justification = c(1, 1))
 plot
 ```
 
 Critical ratios are represented by vertical lines.
 
 Plants in both pitcher-present and pitcher-absent microsites are most strongly N-limited (?).
+CA: I would say that they are most strongly P-limited.
+
+About **N limitation**:
+
+- All sites have N:P higher than 14.5 (blue isoproportion line).
+  (so none are N limited, correct?).
+- None of the N:K values are higher than 3.1 (light green line),
+  but some are higher than 2.1 (darkgreen line).
+ (these would definitely not be N limited, correct?)
+
+About **P limitation**: all points are super far from the top apex (100% P),
+close to the horizontal line across that apex, where there is 0% P.
+More specifically:
+
+- all sites have K:P above 3.4 (red line), and
+- all sites have N:P above 4.5 (blue line).
+
+The points are overlapping a lot around the line N:K = 2.1, so it's hard to
+see if there are mostly pitcher-present or pitcher-absent sites above/below this line.
+But let's tabulate: we get that there are only 4 sites with TN:K above 2.1.
+Of these 4 sites, 3 are in a pitcher-absent patch
+(2 along the same transect 11, the third in transect 13),
+and the 4th is in a pitcher-present area.
+It goes in the expected direction, but 3 versus 1 is not statistically different from
+a half/half ratio.
+
+```{r}
+with(tissuenutrients, table(TN/K<2.1, Microsite))
+subset(tissuenutrients, TN/K>2.1)
+transect.color = rep("black",13)
+transect.color[c(2,13,11)] = c("red", "blue","purple")
+layout(matrix(1:2,1,2))
+with(tissuenutrients, interaction.plot(Microsite, Transect, TN/K, legend=F, col=transect.color))
+plot(TN/K ~ Microsite, data=tissuenutrients)
+```
+
+From this we see that in 10 of the 13 transect, TN:K is higher in the pitcher-present area
+than in the pitcher-absent patch. Does that run counter to expectations?
+(in the plot above and those below, transect 2 is in red, transect 13 is in blue,
+and transect 11 is in purple.)
+
+If Phosphorous is limiting, we could analyze the ratios P/xxx. For example:
+
+```{r, fig.height=8}
+layout(matrix(1:4,2,2))
+with(tissuenutrients, interaction.plot(Microsite, Transect, P/K, legend=F, col=transect.color))
+with(tissuenutrients, interaction.plot(Microsite, Transect, P/TN, legend=F, col=transect.color))
+with(tissuenutrients, interaction.plot(Microsite, Transect, P/(K+TN), legend=F, col=transect.color))
+with(tissuenutrients, interaction.plot(Microsite, Transect, P/(P+K+TN), legend=F, col=transect.color))
+```
+
+We if look at the proportion of P, i.e. P/(P+K+TN), we still don't find any evidence
+of association with microsite (pitcher plant present/absent).
+
+```{r, fig.height=3, fig.width=12}
+fit = lm(P/(P+K+TN) ~ Transect + Microsite, data=tissuenutrients)
+drop1(fit, test="F")
+layout(matrix(1:4,1,4))
+plot(fit)
+```
+
+How about N+P limitation?
+
+```{r}
+layout(matrix(1:2,1,2))
+with(tissuenutrients, interaction.plot(Microsite, Transect, (TN+P)/K, legend=T, col=transect.color))
+with(tissuenutrients, interaction.plot(Microsite, Transect, (TN+P)/(TN+P+K), legend=F, col=transect.color))
+```
+
+```{r, fig.height=3, fig.width=12}
+fit = lm((TN+P)/(TN+P+K) ~ Transect + Microsite, data=tissuenutrients)
+drop1(fit, test="F")
+layout(matrix(1:4,1,4))
+plot(fit)
+```
 
 ```{r echo=FALSE}
 sessionInfo()
