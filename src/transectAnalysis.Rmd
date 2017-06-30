@@ -1,0 +1,1576 @@
+---
+title: Analysis of S. alata Microdistribution at Buttercup Flats, MS
+author: "[K. William Sparks](https://github.com/kwsparks)"
+date: "`r Sys.Date()`"
+bibliography: microdistribution.bib
+output:
+  html_document:
+    fig_width:  8
+    fig_height: 4
+
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(comment="")
+knitr::opts_knit$set(global.par = TRUE)
+```
+
+# Introduction
+
+Patterned distributions of individual plant species and species groups are likely to reflect patterns in environmental conditions and constraints imposed on plant survival, growth, and reproductive ability by abiotic and biotic factors, including physiological tolerance of levels of various environmental conditions (e.g., soil moisture, [Ca], wind speed), competition with other plants, and interactions with herbivores and pathogens. If variation in the abundance of focal species characterized by different growth forms or physiologies is correlated with environmental conditions, and not due merely to limited plant dispersal, it can suggest that those forms or physiologies are adapted to different states or levels of those conditions.
+
+Sarracenia is a genus of 11 species of carnivorous plants, occurring on the coastal plains of the eastern United States, that produce pitcher-shaped leaves filled with liquid that function as pitfall traps. 
+
+Givnish (personal communication) observed a patchy distribution of S. alata in the extensive wet, sandy pine savannas at Buttercup Flats near Wiggins, Mississippi in the DeSoto National Forest. Such wet pine savannas of the Gulf Coastal plain of the United States contain an extraordinary diversity and abundance of carnivorous plants occurring down slope from mesic longleaf pine (*Pinus palustris* Mill.) dominated uplands [@brewer1999effects]. On these sites, S. alata tends to co-occur with crayfish mounds made of clay material (Givnish, pers. obs.), suggesting that the plant’s locally patchy distribution may have originated from a hidden variability in the physical composition of the substrate [@brewer1999effects]. Specifically, the presence of clay lenses in the subsoil may create localized anoxic zones that prevent nitrogen fixation by soil microbes, leading to wet, N-poor microsites that favor the establishment of carnivorous plants, due to low levels of soil nitrate and hostile, anoxic conditions that can work against root uptake of soil nutrients generally. I therefore aim to test the hypothesis that scattered but hidden clay lenses help generate the patchy distribution of Sarracenia, creating zones that are poor in nitrate and dissolved oxygen.
+
+![pattern1](../images/pattern1.JPG)
+
+Thirteen transects crossing the described vegetation pattern were set up randomly within in the savanna at Buttercup Flats facing a compass bearing of 160 degrees. Each transect contained a pitcher-absent microsite in the middle and 10-m of pitcher-present microsites on each end. Transects 11, 12, and 13 intersected multiple pitcher-absent patches and were therefore evaluated at more locations compared to the other transects. Soil and tissue nutrients, ground Coverage of all species, and soil clay content clay content were measured at these sites using a stratified random design.
+
+# Analysis of Soil Nutrients
+
+Plant Root Simulators (PRS, available from [Western Ag](https://www.westernag.ca/)) with cation and anion exchange resins be planted in pairs of three in two locations along the transect: 1) a random location at the pitcher-present microsite in the beginning ten meters of the transect and 2) a random location in each pitcher-absent microsite contained within the transect. Probe burial time was 46-47 days.
+All soil nutrients were measured in μg/cm<sup>2</sup>.
+
+Each nutrient is evaluated independently for its association with microsite type
+(pitcher plant-present, pitcher plant-absent).
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = "../cleaned/") # directory for the data
+# changes working directory for all subsequent chunks
+# relative path: to work for everyone.
+# assumes this Rmd file is started from xxx/analysis/src/
+#             and the data files are in xxx/analysis/cleaned/
+par(mar=c(3.1,3.1,1.8,1.1), mgp=c(1.4,.4,0), tck=-0.01)
+```
+
+```{r}
+soilNPK = read.csv(file = "soilNPK.csv", header = TRUE)
+soilNPK$Transect = factor(soilNPK$Transect) # interpreted as factor, not numerical values
+str(soilNPK)
+```
+
+## Soil Nitrogren
+
+Soil nitrogen is evaluated as both Total Nitrogen and its components:  
+Total Nitrogen is treated as the sum of soil nitrate (NO3<sup>-</sup>) and soil ammonium (NH4<sup>+</sup>).
+
+Increased clay content would reduce drainage and create local flooding. The resulting anoxic environment would severely limit nitrification and favor denitrification, necesitating alternative nutrient acquisition strategies. We would, therefore, expect lower concentrations of soil nitrogen at clay-rich and (presumably) pitcher-present microsites [@craft2002forms]
+
+Differences in soil levels of nitrate and ammonium between or within microsites might indicate a preferential aquisition of a given form of nitrogen based on physiological differences between dominant plants [@olde2003species].
+
+```{r}
+soilNPK$TN <- soilNPK$NO3 + soilNPK$NH4
+```
+
+### Total Nitrogen
+
+#### data visualization
+
+```{r, fig.width=8, fig.height=4}
+layout(matrix(1:2,1,2))
+hist(soilNPK$TN, main="", col="tan", breaks=20)
+qqnorm(soilNPK$TN, main = '', ylab="soil K")
+qqline(soilNPK$TN)
+```
+
+The histogram for total soil nitrogen concentrations is moderately right-skewed.
+Q-Q plots were used to test for normality because the Shapiro-Wilk test is not powerful at small sample size (n=31).
+Sample quantiles show noticible deviation from theoretical quantiles; Q-Q plot does suggests a significant deviation from normality.
+Two outliers (large TN values) can be seen in both the histogram and the Q-Q plot.
+they are on 2 different transects and represent different microsites.
+
+```{r}
+subset(soilNPK, TN>15 )
+```
+
+Let's now just visualize the association between total soil nitrogen and microsite,
+and also see the pairing by transect (transect 1 is in red, transect 13 is in blue).
+
+```{r}
+transect.color = rep("black",13)
+transect.color[c(1,13)] = c("red", "blue")
+layout(matrix(1:2,1,2))
+with(soilNPK, interaction.plot(Microsite, Transect, TN, legend=FALSE, col=transect.color))
+plot(TN~Microsite, data=soilNPK)
+```
+
+These two transects show large changes in mean TN (in opposite directions) between microsites (note that Transect 13 has several data points for the "-" microsite).
+
+The outliers are much "less" outliers and the Q-Q plot shows no significant deviation from normality when we consider the log(potassium) values:
+```{r, fig.height=8}
+layout(matrix(1:4,2,2, byrow=T))
+with(soilNPK, hist(log(TN), main="", col="tan", breaks=20))
+with(soilNPK, qqnorm(log(TN), main = '', ylab="soil log(TN)"))
+with(soilNPK, interaction.plot(Microsite, Transect, log(TN), legend=FALSE, col=transect.color))
+plot(log(TN)~Microsite, data=soilNPK)
+```
+
+From this, TN values between microsites increase and decrease in an equal number of transects.
+
+### statistical analysis
+
+If we analyze the log values, it seems that (at first sight) we can use a t-test
+or a 2-way ANOVA-based method. We will double-check the normality of residuals after
+we get these residuals.
+
+At transects 11, 12, and 13, multiple data points (for soil nutrients only) were collected for pitcher plant-absent microsites.
+It is necessary to average these pitcher plant-absent data points for their respective transects to perform a t-test (which requires a single value per transect per microsite).
+This averaging is not necessary with a 2-way ANOVA-based approach.
+
+A new vector is created specifically for the paired t-test.
+```{r}
+table(soilNPK[1:2])
+logTNmeans = with(soilNPK, tapply(log(TN), Microsite:Transect, mean))
+TN_minus = logTNmeans[1:13]
+TN_plus = logTNmeans[14:26]
+TN_minus  # log values, in fact
+TN_plus
+```
+
+A paired t-test is performed on pitcher plant-absent and pitcher plant-present TN soil concentrations.
+```{r}
+t.test(TN_plus, TN_minus, paired = TRUE)
+```
+
+TN concentrations are not significantly different between
+pitcher-present and pitcher-absent microsites (p=0.59).  
+We can do this again with the non-transformed TN values, but there is still no
+evidence of association (p=0.57).
+
+```{r}
+TNmeans = with(soilNPK, tapply(TN, Microsite:Transect, mean))
+TN_minus = TNmeans[1:13]
+TN_plus = TNmeans[14:26]
+t.test(TN_plus, TN_minus, paired=TRUE)
+```
+
+A linear model is also constructed as both a supplement and a comparison to the paired t-test. We get practically the same p-values, but we also get to see diagnostic plots
+to confirm that assumptions are met reasonably well.
+
+The linear model is constructed with TN (or log(TN)) as the dependent variable,
+transect as the first factor, and microsite as the second factor.
+We first use the raw TN values, not transformed.
+The residuals look fairly normally distributed, but the first residual plot
+does not look great.  
+No evidence for association between TN and microsite (p=0.37).
+```{r, fig.height=3, fig.width=12}
+fit <- lm(TN ~ Transect + Microsite, data=soilNPK)
+anova(fit)
+drop1(fit, test="F")
+layout(matrix(1:4,1,4, byrow=T))
+plot(fit)
+```
+
+We can re-do this analysis, using log(TN) values this time.
+Still no evidence of an association (p=0.39).
+The residual plots look better (more homogeneous variance),
+so this analysis is preferred over the analysis of TN (untransformed).
+```{r, fig.height=3, fig.width=12}
+fit <- lm(log(TN) ~ Transect + Microsite, data=soilNPK)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+### Ammonium
+
+#### data visualization
+
+We repeat the same analysis using ammonium (NH4<sup>+</sup>) the cationic componenet of Total Nitrogen.
+
+```{r, fig.width=8, fig.height=4}
+layout(matrix(1:2,1,2))
+hist(soilNPK$NH4, main="", col="tan", breaks=20)
+qqnorm(soilNPK$NH4, main = '', ylab="soil NH4")
+qqline(soilNPK$NH4)
+```
+
+The histogran for soil ammonium concentrations is noticibly right-skewed.
+Q-Q plots were used to test for normality because the Shapiro-Wilk test is not powerful at small sample size (n=31).
+Sample quantiles do not noticible deviation from theoretical quantiles; the Q-Q plot suggests a significant deviation from normality.
+Four outliers (large ammonium values) can be seen in the Q-Q plots.
+they are on 4 different transects, representing both microsites equally.
+
+```{r}
+subset(soilNPK, NH4>10 )
+```
+
+Let's now just visualize the association between ammonium and microsite,
+and also see the pairing by transect (transect 1 is in red, transects 12 and 13 are in blue).
+
+```{r}
+transect.color = rep("black",13)
+transect.color[c(1,13, 12)] = c("red", "blue", "blue")
+layout(matrix(1:2,1,2))
+with(soilNPK, interaction.plot(Microsite, Transect, NH4, legend=FALSE, col=transect.color))
+plot(NH4~Microsite, data=soilNPK)
+```
+
+All transects, with the exeptions of the highlighted transects 1, 12, and 13, do not show large differences in ammonium. Ammonium concentrations tend to be slightly greater on the pitcher-present microsite of each transect. 
+Q-Q plots show much less deviation from normality when we consider the log(ammonium) values:
+```{r, fig.height=8}
+layout(matrix(1:4,2,2, byrow=T))
+with(soilNPK, hist(log(NH4), main="", col="tan", breaks=20))
+with(soilNPK, qqnorm(log(NH4), main = '', ylab="soil log(NH4)"))
+with(soilNPK, interaction.plot(Microsite, Transect, log(NH4), legend=FALSE, col=transect.color))
+plot(log(NH4)~Microsite, data=soilNPK)
+```
+
+
+### statistical analysis
+
+If we analyze the log values, it seems that (at first sight) we can use a t-test
+or a 2-way ANOVA-based method. We will double-check the normality of residuals after
+we get these residuals.
+
+At transects 11, 12, and 13, multiple data points (for soil nutrients only) were collected for pitcher plant-absent microsites.
+It is necessary to average these pitcher plant-absent data points for their respective transects to perform a t-test (which requires a single value per transect per microsite).
+This averaging is not necessary with a 2-way ANOVA-based approach.
+
+A new vector is created specifically for the paired t-test.
+```{r}
+table(soilNPK[1:2])
+logNH4means = with(soilNPK, tapply(log(NH4), Microsite:Transect, mean))
+NH4_minus = logNH4means[1:13]
+NH4_plus = logNH4means[14:26]
+NH4_minus  # log values, in fact
+NH4_plus
+```
+
+A paired t-test is performed on pitcher plant-absent and pitcher plant-present K soil concentrations.
+```{r}
+t.test(NH4_plus, NH4_minus, paired = TRUE)
+```
+
+Ammonium concentrations are not significantly different between
+pitcher-present and pitcher-absent microsites (p=0.29).  
+We can do this again with the non-transformed Ammonium values, but there is still no
+evidence of association (p=0.48).
+
+```{r}
+NH4means = with(soilNPK, tapply(NH4, Microsite:Transect, mean))
+NH4_minus = NH4means[1:13]
+NH4_plus = NH4means[14:26]
+t.test(NH4_plus, NH4_minus, paired=TRUE)
+```
+
+A linear model is also constructed as both a supplement and a comparison to the paired t-test. We get practically the same p-values, but we also get to see diagnostic plots
+to confirm that assumptions are met reasonably well.
+
+The linear model is constructed with ammonium (or log(ammonium)) as the dependent variable,
+transect as the first factor, and microsite as the second factor.
+We first use the raw ammonium values, not transformed.
+The residuals look fairly normally distributed, but the first residual plot and the Q-Q plot 
+do not look great.  
+No evidence for association between ammonium and microsite (p=0.31).
+```{r, fig.height=3, fig.width=12}
+fit <- lm(NH4 ~ Transect + Microsite, data=soilNPK)
+anova(fit)
+drop1(fit, test="F")
+layout(matrix(1:4,1,4, byrow=T))
+plot(fit)
+```
+
+We can re-do this analysis, using log(ammonium) values this time.
+Still no evidence of an association (p=0.17).
+The residual plots look better (more homogeneous variance) and the Q-Q plot show less deviation from normality,
+so this analysis is preferred over the analysis of ammonium (untransformed).
+```{r, fig.height=3, fig.width=12}
+fit <- lm(log(NH4) ~ Transect + Microsite, data=soilNPK)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+### Nitrate
+
+We, again, repeat the same analysis, this time using nitrate (NO3<sup>-</sup>) the anionic componenet of Total Nitrogen.
+
+#### data visualization
+
+```{r, fig.width=8, fig.height=4}
+layout(matrix(1:2,1,2))
+hist(soilNPK$NO3, main="", col="tan", breaks=20)
+qqnorm(soilNPK$NO3, main = '', ylab="soil NO3")
+qqline(soilNPK$NO3)
+```
+
+The histogran for soil nitrate concentrations is moderately right-skewed.
+Q-Q plots were used to test for normality because the Shapiro-Wilk test is not powerful at small sample size (n=31).
+Sample quantiles do not show noticible deviation from Q-Q plot does not suggest any significant deviations from normality (though the first few quantiles look a little weird).
+Two outliers (large nitrate values) can be seen in the Q-Q plots.
+they are on 2 different transects and represent different microsites.
+
+```{r}
+subset(soilNPK, NO3>4 )
+```
+
+Let's now just visualize the association between nitrate and microsite,
+and also see the pairing by transect (transect 1 is in red, transect 8 is in blue).
+
+```{r}
+transect.color = rep("black",13)
+transect.color[c(1,8)] = c("red", "blue")
+layout(matrix(1:2,1,2))
+with(soilNPK, interaction.plot(Microsite, Transect, NO3, legend=FALSE, col=transect.color))
+plot(NO3~Microsite, data=soilNPK)
+```
+
+Two large changes in nitrate concentrates (those of the highlighted transects) are visible, going in different directions, between microsites.
+
+The outliers are much "less" outliers when we consider the squareroot(nitrate) values. A square root tranformation was chosen for nitrate due to the presence of several zeroes in the data. The Q-Q plot has lost its outliers but still does not look great:
+```{r, fig.height=8}
+layout(matrix(1:4,2,2, byrow=T))
+with(soilNPK, hist(sqrt(NO3), main="", col="tan", breaks=20))
+with(soilNPK, qqnorm(sqrt(NO3), main = '', ylab="soil log(NO3)"))
+with(soilNPK, interaction.plot(Microsite, Transect, sqrt(NO3), legend=FALSE, col=transect.color))
+plot(sqrt(NO3)~Microsite, data=soilNPK)
+```
+
+From this, most transects show slight changes in nitrate concentration across microsites. These changes go in different directions in an equal frequency.
+
+### statistical analysis
+
+If we analyze the squart root values, it seems that (at first sight) we can use a t-test
+or a 2-way ANOVA-based method. We will double-check the normality of residuals after
+we get these residuals.
+
+At transects 11, 12, and 13, multiple data points (for soil nutrients only) were collected for pitcher plant-absent microsites.
+It is necessary to average these pitcher plant-absent data points for their respective transects to perform a t-test (which requires a single value per transect per microsite).
+This averaging is not necessary with a 2-way ANOVA-based approach.
+
+A new vector is created specifically for the paired t-test.
+```{r}
+table(soilNPK[1:2])
+sqrtNO3means = with(soilNPK, tapply(sqrt(NO3), Microsite:Transect, mean))
+NO3_minus = sqrtNO3means[1:13]
+NO3_plus = sqrtNO3means[14:26]
+NO3_minus  # log values, in fact
+NO3_plus
+```
+
+A paired t-test is performed on pitcher plant-absent and pitcher plant-present K soil concentrations.
+```{r}
+t.test(NO3_plus, NO3_minus, paired = TRUE)
+```
+
+K concentrations are not significantly different between
+pitcher-present and pitcher-absent microsites (p=0.92).  
+We can do this again with the non-transformed K values, but there is still no
+evidence of association (p=0.92).
+
+```{r}
+NO3means = with(soilNPK, tapply(NO3, Microsite:Transect, mean))
+NO3_minus = NO3means[1:13]
+NO3_plus = NO3means[14:26]
+t.test(NO3_plus, NO3_minus, paired=TRUE)
+```
+
+A linear model is also constructed as both a supplement and a comparison to the paired t-test. We get practically the same p-values, but we also get to see diagnostic plots
+to confirm that assumptions are met reasonably well.
+
+The linear model is constructed with nitrate (or squareroot(nitrte)) as the dependent variable,
+transect as the first factor, and microsite as the second factor.
+We first use the raw nitrate values, not transformed.
+The residuals look fairly normally distributed, and the Q-Q plot suggests normality.  
+No evidence for association between nitrate and microsite (p=0.28).
+```{r, fig.height=3, fig.width=12}
+fit <- lm(NO3 ~ Transect + Microsite, data=soilNPK)
+anova(fit)
+drop1(fit, test="F")
+layout(matrix(1:4,1,4, byrow=T))
+plot(fit)
+```
+
+We can re-do this analysis, using squareroot(nitrate) values this time.
+Still no evidence of an association (p=0.34).
+The residual plots look (slightly) better (more homogeneous variance),
+so this analysis is preferred over the analysis of nitrate (untransformed).
+```{r, fig.height=3, fig.width=12}
+fit <- lm(sqrt(NO3) ~ Transect + Microsite, data=soilNPK)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+## Soil Phosphorus
+
+Soil phosphorus, in contrast to nitrogen, is expected to increase with local inundation, which chemically reduces Fe bound P, releasing Phosphate into the soil [@craft2002forms].
+
+### data visualization
+
+```{r, fig.width=8, fig.height=4}
+layout(matrix(1:2,1,2))
+hist(soilNPK$P, main="", col="tan", breaks=20)
+qqnorm(soilNPK$P, main = '', ylab="soil P")
+qqline(soilNPK$P)
+```
+
+The histogran for soil phosphorus concentrations is slightly left-skewed.
+Q-Q plots were used to test for normality because the Shapiro-Wilk test is not powerful at small sample size (n=31).
+Sample quantiles show noticible deviation from theoretical quantiles; the Q-Q plot suggests significant deviations from normality.
+One outlier (large P value) can be seen in the Q-Q plots.
+This data point is on transect 11 and in the "+" microsite: pitcher plants present
+
+
+```{r}
+subset(soilNPK, P>1.4 )
+```
+
+Let's now just visualize the association between phosphorus and microsite,
+and also see the pairing by transect (transect 9 is in red, transects 6 and 13 is in blue).
+
+```{r}
+transect.color = rep("black",13)
+transect.color[c(9,13,6)] = c("red", "blue", "blue")
+layout(matrix(1:2,1,2))
+with(soilNPK, interaction.plot(Microsite, Transect, P, legend=FALSE, col=transect.color))
+plot(P~Microsite, data=soilNPK)
+```
+
+The transects with the largest changes in soil (6,9,13) phosphorus do not correspond to the outlier (Transect 11). Soil phosphorus, in general, increases at the pitcher-present site.
+
+
+The outliers are much "less" outliers when we consider the log(phosphorus) values (but the Q-Q plot still does not look great!):
+```{r, fig.height=8}
+layout(matrix(1:4,2,2, byrow=T))
+with(soilNPK, hist(log(P), main="", col="tan", breaks=20))
+with(soilNPK, qqnorm(log(P), main = '', ylab="soil log(P)"))
+with(soilNPK, interaction.plot(Microsite, Transect, log(P), legend=FALSE, col=transect.color))
+plot(log(P)~Microsite, data=soilNPK)
+```
+
+
+### statistical analysis
+
+If we analyze the log values, it seems that (at first sight) we can use a t-test
+or a 2-way ANOVA-based method. We will double-check the normality of residuals after
+we get these residuals.
+
+At transects 11, 12, and 13, multiple data points (for soil nutrients only) were collected for pitcher plant-absent microsites.
+It is necessary to average these pitcher plant-absent data points for their respective transects to perform a t-test (which requires a single value per transect per microsite).
+This averaging is not necessary with a 2-way ANOVA-based approach.
+
+A new vector is created specifically for the paired t-test.
+```{r}
+table(soilNPK[1:2])
+logPmeans = with(soilNPK, tapply(log(P), Microsite:Transect, mean))
+P_minus = logPmeans[1:13]
+P_plus = logPmeans[14:26]
+P_minus  # log values, in fact
+P_plus
+```
+
+A paired t-test is performed on pitcher plant-absent and pitcher plant-present K soil concentrations.
+```{r}
+t.test(P_plus, P_minus, paired = TRUE)
+```
+
+P concentrations are not significantly different between
+pitcher-present and pitcher-absent microsites (p=0.88).  
+We can do this again with the non-transformed P values, but there is still no
+evidence of association (p=0.85).
+
+```{r}
+Pmeans = with(soilNPK, tapply(P, Microsite:Transect, mean))
+P_minus = Pmeans[1:13]
+P_plus = Pmeans[14:26]
+t.test(P_plus, P_minus, paired=TRUE)
+```
+
+A linear model is also constructed as both a supplement and a comparison to the paired t-test. We get practically the same p-values, but we also get to see diagnostic plots
+to confirm that assumptions are met reasonably well.
+
+The linear model is constructed with P (or log(P)) as the dependent variable,
+transect as the first factor, and microsite as the second factor.
+We first use the raw K values, not transformed.
+The residuals look fairly normally distributed.  
+No evidence for association between K and microsite (p=0.84).
+```{r, fig.height=3, fig.width=12}
+fit <- lm(P ~ Transect + Microsite, data=soilNPK)
+anova(fit)
+drop1(fit, test="F")
+layout(matrix(1:4,1,4, byrow=T))
+plot(fit)
+```
+
+We can re-do this analysis, using log(P) values this time.
+Still no evidence of an association (p=0.86).
+The residual plots look better (more homogeneous variance),
+so this analysis is preferred over the analysis of P (untransformed).
+```{r, fig.height=3, fig.width=12}
+fit <- lm(log(P) ~ Transect + Microsite, data=soilNPK)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+
+## Soil Potassium
+
+Soil Potassium may be less abundant at microsites with lower clay content due a probable increase in nutrient leeching [@inglett2005anaerobic].
+
+### data visualization
+
+```{r, fig.width=8, fig.height=4}
+layout(matrix(1:2,1,2))
+hist(soilNPK$K, main="", col="tan", breaks=20)
+qqnorm(soilNPK$K, main = '', ylab="soil K")
+qqline(soilNPK$K)
+```
+
+The histogran for soil potassium concentrations is slightly right-skewed.
+Q-Q plots were used to test for normality because the Shapiro-Wilk test is not powerful at small sample size (n=31).
+Sample quantiles do not show noticible deviation from theoretical quantiles; Q-Q plot does not suggest any significant deviations from normality.
+Three outliers (large K values) can be seen in the Q-Q plots.
+they are on 3 different transects, but all in the "-" microsite: pitcher plants absent
+(note that one of these transects, #13, has another observation for "-" microsite)
+
+```{r}
+subset(soilNPK, K>200 )
+```
+
+Let's now just visualize the association between potassium and microsite,
+and also see the pairing by transect (transect 1 is in red, transect 4 is in blue).
+
+```{r}
+transect.color = rep("black",13)
+transect.color[c(1,4)] = c("red", "blue")
+layout(matrix(1:2,1,2))
+with(soilNPK, interaction.plot(Microsite, Transect, K, legend=FALSE, col=transect.color))
+plot(K~Microsite, data=soilNPK)
+```
+
+The outliers are much "less" outliers when we consider the log(potassium) values:
+```{r, fig.height=8}
+layout(matrix(1:4,2,2, byrow=T))
+with(soilNPK, hist(log(K), main="", col="tan", breaks=20))
+with(soilNPK, qqnorm(log(K), main = '', ylab="soil log(K)"))
+with(soilNPK, interaction.plot(Microsite, Transect, log(K), legend=FALSE, col=transect.color))
+plot(log(K)~Microsite, data=soilNPK)
+```
+
+From this, 4 transects have K higher in the pitcher-present area,
+and 9 transects have K higher in the pitcher-absent area.
+
+### statistical analysis
+
+If we analyze the log values, it seems that (at first sight) we can use a t-test
+or a 2-way ANOVA-based method. We will double-check the normality of residuals after
+we get these residuals.
+
+At transects 11, 12, and 13, multiple data points (for soil nutrients only) were collected for pitcher plant-absent microsites.
+It is necessary to average these pitcher plant-absent data points for their respective transects to perform a t-test (which requires a single value per transect per microsite).
+This averaging is not necessary with a 2-way ANOVA-based approach.
+
+A new vector is created specifically for the paired t-test.
+```{r}
+table(soilNPK[1:2])
+logKmeans = with(soilNPK, tapply(log(K), Microsite:Transect, mean))
+K_minus = logKmeans[1:13]
+K_plus = logKmeans[14:26]
+K_minus  # log values, in fact
+K_plus
+```
+
+A paired t-test is performed on pitcher plant-absent and pitcher plant-present K soil concentrations.
+```{r}
+t.test(K_plus, K_minus, paired = TRUE)
+```
+
+K concentrations are not significantly different between
+pitcher-present and pitcher-absent microsites (p=0.47).  
+We can do this again with the non-transformed K values, but there is still no
+evidence of association (p=0.23).
+
+```{r}
+Kmeans = with(soilNPK, tapply(K, Microsite:Transect, mean))
+K_minus = Kmeans[1:13]
+K_plus = Kmeans[14:26]
+t.test(K_plus, K_minus, paired=TRUE)
+```
+
+A linear model is also constructed as both a supplement and a comparison to the paired t-test. We get practically the same p-values, but we also get to see diagnostic plots
+to confirm that assumptions are met reasonably well.
+
+The linear model is constructed with K (or log(K)) as the dependent variable,
+transect as the first factor, and microsite as the second factor.
+We first use the raw K values, not transformed.
+The residuals look fairly normally distributed, but the first residual plot
+does not look great.  
+No evidence for association between K and microsite (p=0.22).
+```{r, fig.height=3, fig.width=12}
+fit <- lm(K ~ Transect + Microsite, data=soilNPK)
+anova(fit)
+drop1(fit, test="F")
+layout(matrix(1:4,1,4, byrow=T))
+plot(fit)
+```
+
+We can re-do this analysis, using log(K) values this time.
+Still no evidence of an association (p=0.47).
+The residual plots look better (more homogeneous variance),
+so this analysis is preferred over the analysis of K (untransformed).
+```{r, fig.height=3, fig.width=12}
+fit <- lm(log(K) ~ Transect + Microsite, data=soilNPK)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+
+# Analysis of Sedge tissue nutrients
+
+Aboveground biomass of 6 species of sedges in the Rhynchospora genus (R. megalocarpa, R. compressa, R. gracilenta, R. plumosa, R. rariflora, R. harveyi var harveyi) were collected, dried, and analyzed for % N, P, and K content by the [University of Wisconsin Soil and Forage Lab](https://uwlab.soils.wisc.edu/), as a measure of the availability of these nutrients to non-carnivorous plants. All species are C3.
+
+All tissue nutrients were measured in % of Aboveground Dry Mass.
+
+```{r}
+tissuenutrients <- read.table("tissueNPK.csv", header = TRUE, sep=",")
+tissuenutrients$Transect = factor(tissuenutrients$Transect)
+str(tissuenutrients)
+```
+
+## Tissue Nitrogen
+
+Tissue Nitrogen was analyzed only as Total Nitrogen.
+
+Lower soil nitrogen concentrations, combined with inhibition of root uptake on anoxic microsites, could likely result in lower plant tissue N on clay-rich microsites [@olde2003species].
+
+### data visualization
+
+```{r, fig.width=8, fig.height=4}
+layout(matrix(1:2,1,2))
+hist(tissuenutrients$TN, main="", col="tan", breaks=20)
+qqnorm(tissuenutrients$TN, main = '', ylab="soil TN")
+qqline(tissuenutrients$TN)
+```
+
+The histogram for tissue nitrogen concentrations is moderately right-skewed unimodal.
+Q-Q plots were used to test for normality because the Shapiro-Wilk test is not powerful at small sample size (n=29).
+Sample quantiles do not show noticible deviation from theoretical quantiles; the Q-Q plot does not suggest any significant deviations from normality.
+One outliers (a large TN value) can be seen in the histogram and Q-Q plot.
+This data point is on Transect 1 and in the "+" microsite: pitcher plants present
+
+
+```{r}
+subset(tissuenutrients, TN>1.4 )
+```
+
+Let's now just visualize the association between tissue nitrogen and microsite,
+and also see the pairing by transect (transect 1 is in red, transect 13 is in blue).
+
+```{r}
+transect.color = rep("black",13)
+transect.color[c(1,13)] = c("red", "blue")
+layout(matrix(1:2,1,2))
+with(tissuenutrients, interaction.plot(Microsite, Transect, TN, legend=FALSE, col=transect.color))
+plot(TN~Microsite, data=tissuenutrients)
+```
+
+The outliers are much "less" outliers when we consider the log(potassium) values:
+```{r, fig.height=8}
+layout(matrix(1:4,2,2, byrow=T))
+with(tissuenutrients, hist(log(TN), main="", col="tan", breaks=20))
+with(tissuenutrients, qqnorm(log(TN), main = '', ylab="soil log(TN)"))
+with(tissuenutrients, interaction.plot(Microsite, Transect, log(TN), legend=FALSE, col=transect.color))
+plot(log(TN)~Microsite, data=tissuenutrients)
+```
+
+From this, TN concentrations tend to change between microsites roughly equally in both directons.
+
+### statistical analysis
+
+If we analyze the log values, it seems that (at first sight) we can use a t-test
+or a 2-way ANOVA-based method. We will double-check the normality of residuals after
+we get these residuals.
+
+At transects 11, 12, and 13, multiple data points (for soil nutrients only) were collected for pitcher plant-absent microsites.
+It is necessary to average these pitcher plant-absent data points for their respective transects to perform a t-test (which requires a single value per transect per microsite).
+This averaging is not necessary with a 2-way ANOVA-based approach.
+
+A new vector is created specifically for the paired t-test.
+```{r}
+table(tissuenutrients[1:2])
+logTNmeans = with(tissuenutrients, tapply(log(TN), Microsite:Transect, mean))
+TN_minus = logTNmeans[1:13]
+TN_plus = logTNmeans[14:26]
+TN_minus  # log values, in fact
+TN_plus
+```
+
+A paired t-test is performed on pitcher plant-absent and pitcher plant-present TN tissue concentrations.
+```{r}
+t.test(TN_plus, TN_minus, paired = TRUE)
+```
+
+TN tissue concentrations are not significantly different between
+pitcher-present and pitcher-absent microsites (p=0.14).  
+We can do this again with the non-transformed TN tissue values, but there is still no
+evidence of association (p=0.12).
+
+```{r}
+TNmeans = with(tissuenutrients, tapply(TN, Microsite:Transect, mean))
+TN_minus = TNmeans[1:13]
+TN_plus = TNmeans[14:26]
+t.test(TN_plus, TN_minus, paired=TRUE)
+```
+
+A linear model is also constructed as both a supplement and a comparison to the paired t-test. We get practically the same p-values, but we also get to see diagnostic plots
+to confirm that assumptions are met reasonably well.
+
+The linear model is constructed with TN (or log(TN)) as the dependent variable,
+transect as the first factor, and microsite as the second factor.
+We first use the raw TN values, not transformed.
+The residuals look fairly normally distributed, but the first residual plot
+does not look great.  
+No evidence for association between TN and microsite (p=0.12).
+```{r, fig.height=3, fig.width=12}
+fit <- lm(TN ~ Transect + Microsite, data=tissuenutrients)
+anova(fit)
+drop1(fit, test="F")
+layout(matrix(1:4,1,4, byrow=T))
+plot(fit)
+```
+
+We can re-do this analysis, using log(TN) values this time.
+Still no evidence of an association (p=0.13).
+The residual plots look better (more homogeneous variance),
+so this analysis is preferred over the analysis of TN (untransformed).
+```{r, fig.height=3, fig.width=12}
+fit <- lm(log(TN) ~ Transect + Microsite, data=tissuenutrients)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+
+## Tissue Phosphorus
+
+Increased soil P avaliablilty due to frequent inundation would likely result in increased tissue P on clay-rich microsites [@craft2002forms]
+
+### data visualization
+
+```{r, fig.width=8, fig.height=4}
+layout(matrix(1:2,1,2))
+hist(tissuenutrients$P, main="", col="tan", breaks=20)
+qqnorm(tissuenutrients$P, main = '', ylab="soil P")
+qqline(tissuenutrients$P)
+```
+
+The histogram for tissue phosphorus concentrations is slightly right-skewed.
+Q-Q plots were used to test for normality because the Shapiro-Wilk test is not powerful at small sample size (n=31).
+Sample quantiles do not show noticible deviation from Q-Q plot does not suggest any significant deviations from normality.
+One outlier (large P value) can be seen in the Q-Q plot and histogram.
+This data point is on Transect 1 in the "+" microsite: pitcher plants absent
+
+
+```{r}
+subset(tissuenutrients, P>0.12 )
+```
+
+Let's now just visualize the association between potassium and microsite,
+and also see the pairing by transect (transect 1 is in red, transects 6 an 13 are in blue).
+
+```{r}
+transect.color = rep("black",13)
+transect.color[c(1,13,6)] = c("red", "blue", "blue")
+layout(matrix(1:2,1,2))
+with(tissuenutrients, interaction.plot(Microsite, Transect, P, legend=FALSE, col=transect.color))
+plot(K~Microsite, data=tissuenutrients)
+```
+
+The outliers are much "less" outliers when we consider the log(phosphorus) values:
+```{r, fig.height=8}
+layout(matrix(1:4,2,2, byrow=T))
+with(tissuenutrients, hist(log(P), main="", col="tan", breaks=20))
+with(tissuenutrients, qqnorm(log(P), main = '', ylab="soil log(P)"))
+with(tissuenutrients, interaction.plot(Microsite, Transect, log(P), legend=FALSE, col=transect.color))
+plot(log(P)~Microsite, data=tissuenutrients)
+```
+
+From this, tissue P concentrations generally decrease in the pitcher-present microsite.
+
+### statistical analysis
+
+If we analyze the log values, it seems that (at first sight) we can use a t-test
+or a 2-way ANOVA-based method. We will double-check the normality of residuals after
+we get these residuals.
+
+
+```{r}
+table(tissuenutrients[1:2])
+logPmeans = with(tissuenutrients, tapply(log(P), Microsite:Transect, mean))
+P_minus = logPmeans[1:13]
+P_plus = logPmeans[14:26]
+P_minus  # log values, in fact
+P_plus
+```
+
+A paired t-test is performed on pitcher plant-absent and pitcher plant-present P tissue concentrations.
+```{r}
+t.test(P_plus, P_minus, paired = TRUE)
+```
+
+P concentrations are not significantly different between
+pitcher-present and pitcher-absent microsites (p=0.73).  
+We can do this again with the non-transformed K values, but there is still no
+evidence of association (p=0.78).
+
+```{r}
+Pmeans = with(tissuenutrients, tapply(P, Microsite:Transect, mean))
+P_minus = Pmeans[1:13]
+P_plus = Pmeans[14:26]
+t.test(P_plus, P_minus, paired=TRUE)
+```
+
+A linear model is also constructed as both a supplement and a comparison to the paired t-test. We get practically the same p-values, but we also get to see diagnostic plots
+to confirm that assumptions are met reasonably well.
+
+The linear model is constructed with P (or log(P)) as the dependent variable,
+transect as the first factor, and microsite as the second factor.
+We first use the raw P values, not transformed.
+The residuals look fairly normally distributed, but the first residual plot
+does not look great.  
+No evidence for association between P and microsite (p=0.77).
+```{r, fig.height=3, fig.width=12}
+fit <- lm(P ~ Transect + Microsite, data=tissuenutrients)
+anova(fit)
+drop1(fit, test="F")
+layout(matrix(1:4,1,4, byrow=T))
+plot(fit)
+```
+
+We can re-do this analysis, using log(P) values this time.
+Still no evidence of an association (p=0.71).
+The residual plots look better (more homogeneous variance),
+so this analysis is preferred over the analysis of P (untransformed).
+```{r, fig.height=3, fig.width=12}
+fit <- lm(log(P) ~ Transect + Microsite, data=tissuenutrients)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+
+## Tissue Potassium
+
+Tissue Potassium would be expected to increase at clay-rich microsites due to the decreased effect of nutrient leeching presumably resulting in greater K uptake. 
+
+### data visualization
+
+```{r, fig.width=8, fig.height=4}
+layout(matrix(1:2,1,2))
+hist(tissuenutrients$K, main="", col="tan", breaks=20)
+qqnorm(tissuenutrients$K, main = '', ylab="tissue K")
+qqline(tissuenutrients$K)
+```
+
+The histogram for tissue potassium concentrations is slightly right-skewed.
+Q-Q plots were used to test for normality because the Shapiro-Wilk test is not powerful at small sample size (n=31).
+Sample quantiles do not show noticible deviation from Q-Q plot does not suggest any significant deviations from normality.
+Four high outliers (large K values) can be seen in the Q-Q plots.
+they are on all on different transects and represent the two different microsites equally.
+
+```{r}
+subset(tissuenutrients, K>0.7 )
+```
+
+Let's now just visualize the association between potassium and microsite,
+and also see the pairing by transect (transects 2 and 13 are in red, transects 3 and 5 are in blue).
+
+```{r}
+transect.color = rep("black",13)
+transect.color[c(2,13,3, 5)] = c("red", "red", "blue", "blue")
+layout(matrix(1:2,1,2))
+with(tissuenutrients, interaction.plot(Microsite, Transect, K, legend=FALSE, col=transect.color))
+plot(K~Microsite, data=tissuenutrients)
+```
+
+The outliers are much "less" outliers when we consider the log(potassium) values. The Q-Q plot also looks better (though still has a weird high tail):
+```{r, fig.height=8}
+layout(matrix(1:4,2,2, byrow=T))
+with(tissuenutrients, hist(log(K), main="", col="tan", breaks=20))
+with(tissuenutrients, qqnorm(log(K), main = '', ylab="tissue log(K)"))
+with(tissuenutrients, interaction.plot(Microsite, Transect, log(K), legend=FALSE, col=transect.color))
+plot(log(K)~Microsite, data=tissuenutrients)
+```
+
+From this, 2 transects (those in red) have noticibly K higher in the pitcher-present area,
+and 2 transects (those in blue) have K higher in the pitcher-absent area.
+
+### statistical analysis
+
+If we analyze the log values, it seems that (at first sight) we can use a t-test
+or a 2-way ANOVA-based method. We will double-check the normality of residuals after
+we get these residuals.
+
+A new vector is created specifically for the paired t-test.
+```{r}
+table(tissuenutrients[1:2])
+logKmeans = with(tissuenutrients, tapply(log(K), Microsite:Transect, mean))
+K_minus = logKmeans[1:13]
+K_plus = logKmeans[14:26]
+K_minus  # log values, in fact
+K_plus
+```
+
+A paired t-test is performed on pitcher plant-absent and pitcher plant-present K tissue concentrations.
+```{r}
+t.test(K_plus, K_minus, paired = TRUE)
+```
+
+K concentrations are not significantly different between
+pitcher-present and pitcher-absent microsites (p=0.85).  
+We can do this again with the non-transformed K values, but there is still no
+evidence of association (p=0.79).
+
+```{r}
+Kmeans = with(tissuenutrients, tapply(K, Microsite:Transect, mean))
+K_minus = Kmeans[1:13]
+K_plus = Kmeans[14:26]
+t.test(K_plus, K_minus, paired=TRUE)
+```
+
+A linear model is also constructed as both a supplement and a comparison to the paired t-test. We get practically the same p-values, but we also get to see diagnostic plots
+to confirm that assumptions are met reasonably well.
+
+The linear model is constructed with K (or log(K)) as the dependent variable,
+transect as the first factor, and microsite as the second factor.
+We first use the raw K values, not transformed.
+The residuals look fairly normally distributed, but the first residual plot
+does not look great.  
+No evidence for association between K and microsite (p=0.82).
+```{r, fig.height=3, fig.width=12}
+fit <- lm(K ~ Transect + Microsite, data=tissuenutrients)
+anova(fit)
+drop1(fit, test="F")
+layout(matrix(1:4,1,4, byrow=T))
+plot(fit)
+```
+
+We can re-do this analysis, using log(K) values this time.
+Still no evidence of an association (p=0.89).
+The residual plots look better (more homogeneous variance),
+so this analysis is preferred over the analysis of K (untransformed).
+```{r, fig.height=3, fig.width=12}
+fit <- lm(log(K) ~ Transect + Microsite, data=tissuenutrients)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+
+## NPK Limitation Diagram
+
+N:P, N:K, and P:K ratios from tissue nutrient measurements are compared to critical ratios put forth by [@olde2003species] to determine whether plants are P or P + N limited (N:P > 14.5, K:P >3.4), K or K + N limited (N:K > 3.1, K:P < 3.4), or N limited (N:P < 14.5, N:K < 2.1). The relationship between N:P:K ratios and type of nutrient limitation is illustrated in the subsequent triaxial graph.
+
+
+```{r, message=FALSE}
+library(ggtern)
+plot <- ggtern(data = tissuenutrients, aes(x = TN, y = P, z = K)) +
+  geom_Tisoprop(value=.3226, color='darkgreen') + # T=Top apex: K/(K+N)=.3226 i.e N/K=1/.3226-1=2.1
+  geom_Tisoprop(value=.2439, color='lightgreen') + # Top apex: K/(K+N)=.2439 i.e N/K=1/.2439-1=3.1
+  geom_Risoprop(value=.93548, color='darkblue') + # Right apex P/(P+N)=0.145: N/P=1/.06452-1=14.5
+  geom_Lisoprop(value=.7727273, color='darkred') + # Left apex K/(K+P)=: P/K=1/0.7727273-1=, K/P=1/0.2941=3.4
+  geom_point(aes(fill = Microsite),
+             size = 2,
+             shape = 21,
+             color = "black") +
+  ggtitle("NPK limitation diagram") +
+  labs(fill = "Microsite") +
+  theme_rgbw() +
+  theme(legend.position = c(0,1),
+        legend.justification = c(1, 1))
+plot
+```
+
+Critical ratios are represented by vertical lines.
+
+Plants in both pitcher-present and pitcher-absent microsites are most strongly N-limited (?).
+CA: I would say that they are most strongly P-limited.
+
+About **N limitation**:
+
+- All sites have N:P higher than 14.5 (blue isoproportion line).
+  (so none are N limited, correct?).
+- None of the N:K values are higher than 3.1 (light green line),
+  but some are higher than 2.1 (darkgreen line).
+ (these would definitely not be N limited, correct?)
+
+About **P limitation**: all points are super far from the top apex (100% P),
+close to the horizontal line across that apex, where there is 0% P.
+More specifically:
+
+- all sites have K:P above 3.4 (red line), and
+- all sites have N:P above 4.5 (blue line).
+
+The points are overlapping a lot around the line N:K = 2.1, so it's hard to
+see if there are mostly pitcher-present or pitcher-absent sites above/below this line.
+But let's tabulate: we get that there are only 4 sites with TN:K above 2.1.
+Of these 4 sites, 3 are in a pitcher-absent patch
+(2 along the same transect 11, the third in transect 13),
+and the 4th is in a pitcher-present area.
+It goes in the expected direction, but 3 versus 1 is not statistically different from
+a half/half ratio.
+
+```{r}
+with(tissuenutrients, table(TN/K<2.1, Microsite))
+subset(tissuenutrients, TN/K>2.1)
+transect.color = rep("black",13)
+transect.color[c(2,13,11)] = c("red", "blue","purple")
+layout(matrix(1:2,1,2))
+with(tissuenutrients, interaction.plot(Microsite, Transect, TN/K, legend=F, col=transect.color))
+plot(TN/K ~ Microsite, data=tissuenutrients)
+```
+
+From this we see that in 10 of the 13 transect, TN:K is higher in the pitcher-present area
+than in the pitcher-absent patch. Does that run counter to expectations?
+(in the plot above and those below, transect 2 is in red, transect 13 is in blue,
+and transect 11 is in purple.)
+
+If Phosphorous is limiting, we could analyze the ratios P/xxx. For example:
+
+```{r, fig.height=8}
+layout(matrix(1:4,2,2))
+with(tissuenutrients, interaction.plot(Microsite, Transect, P/K, legend=F, col=transect.color))
+with(tissuenutrients, interaction.plot(Microsite, Transect, P/TN, legend=F, col=transect.color))
+with(tissuenutrients, interaction.plot(Microsite, Transect, P/(K+TN), legend=F, col=transect.color))
+with(tissuenutrients, interaction.plot(Microsite, Transect, P/(P+K+TN), legend=F, col=transect.color))
+```
+
+We if look at the proportion of P, i.e. P/(P+K+TN), we still don't find any evidence
+of association with microsite (pitcher plant present/absent).
+
+```{r, fig.height=3, fig.width=12}
+fit = lm(P/(P+K+TN) ~ Transect + Microsite, data=tissuenutrients)
+drop1(fit, test="F")
+layout(matrix(1:4,1,4))
+plot(fit)
+```
+
+How about N+P limitation?
+
+```{r}
+layout(matrix(1:2,1,2))
+with(tissuenutrients, interaction.plot(Microsite, Transect, (TN+P)/K, legend=T, col=transect.color))
+with(tissuenutrients, interaction.plot(Microsite, Transect, (TN+P)/(TN+P+K), legend=F, col=transect.color))
+```
+
+```{r, fig.height=3, fig.width=12}
+fit = lm((TN+P)/(TN+P+K) ~ Transect + Microsite, data=tissuenutrients)
+drop1(fit, test="F")
+layout(matrix(1:4,1,4))
+plot(fit)
+```
+
+```{r}
+soilNPKphys = read.csv(file = "/home/sparks/Desktop/S_alata_Microdistribution/Microdistribution/analysis/cleaned/soilNPKphys.csv", header = TRUE)
+soilNPKphys$Transect = factor(soilNPKphys$Transect) # interpreted as factor, not numerical values
+str(soilNPKphys)
+```
+
+```{r}
+tissueNPKphys = read.csv(file = "/home/sparks/Desktop/S_alata_Microdistribution/Microdistribution/analysis/cleaned/tissueNPKphys.csv", header = TRUE)
+tissueNPKphys$Transect = factor(tissueNPKphys$Transect) # interpreted as factor, not numerical values
+str(tissueNPKphys)
+```
+
+# Analysis of Soil Clay Composition
+
+## Clay Depth
+
+Clay depth was measured by placing a soil augar with a 23 cm chamber 69 cm into the soil and recording the maximum height of the clay layer. Measurements were recorded at 1) a random location every 15 m along each transect and 2) following the same stratified random schema and coincident with soil and tissue nutrient measurements. Clay depth measurements were not taken concurrent with the PRS soil nutrient samples to prevent the introduction of local drainage. The number of measurements per transect varies with transect length. All distances are relative.
+
+In general, increased clay content at a given microsite is expected to decrease soil and tissue N levels through inhibition of nitrification and reduction in root functionality as a result of local anoxia resulting from poor drainage at these sites. Conversely, P levels are expected to increase with clay content 
+
+```{r, fig.width=8, fig.height=4}
+layout(matrix(1:2,1,2))
+hist(soilNPKphys$Clay_Depth, main="", col="tan", breaks=20)
+qqnorm(soilNPKphys$Clay_Depth, main = '', ylab="Clay Depth")
+qqline(soilNPKphys$Clay_Depth)
+```
+
+The histogram for clay depth concentrations is slightly left-skewed.
+Q-Q plots were used to test for normality because the Shapiro-Wilk test is not powerful at small sample size (n=31).
+Sample quantiles do not show noticible deviation from Q-Q plot does not suggest any significant deviations from normality (though it has a wierd high tail).
+No noticible outliers can be seen in the Q-Q plots.
+
+Let's now just visualize the association between clay depth and microsite,
+and also see the pairing by transect.
+```{r}
+layout(matrix(1:2,1,2))
+with(soilNPKphys, interaction.plot(Microsite, Transect, Clay_Depth, legend=FALSE))
+plot(Clay_Depth~Microsite, data=soilNPKphys)
+```
+
+The outliers are much "less" outliers when we consider the log(potassium) values:
+```{r, fig.height=8}
+layout(matrix(1:4,2,2, byrow=T))
+with(soilNPKphys, hist(log(Clay_Depth), main="", col="tan", breaks=20))
+with(soilNPKphys, qqnorm(log(Clay_Depth), main = '', ylab="soil log(Clay Depth)"))
+with(soilNPKphys, interaction.plot(Microsite, Transect, log(Clay_Depth), legend=FALSE))
+plot(log(Clay_Depth)~Microsite, data=soilNPKphys)
+```
+
+There are few large changes in clay depth between microsite but clay depth, in general, decreases on pitcher-present microsites.
+
+### statistical analysis
+
+If we analyze the log values, it seems that (at first sight) we can use a t-test
+or a 2-way ANOVA-based method. We will double-check the normality of residuals after
+we get these residuals.
+
+At transects 11, 12, and 13, multiple data points (for soil nutrients only) were collected for pitcher plant-absent microsites.
+It is necessary to average these pitcher plant-absent data points for their respective transects to perform a t-test (which requires a single value per transect per microsite).
+This averaging is not necessary with a 2-way ANOVA-based approach.
+
+A new vector is created specifically for the paired t-test.
+```{r}
+table(soilNPKphys[1:2])
+logClaymeans = with(soilNPKphys, tapply(log(Clay_Depth), Microsite:Transect, mean))
+Clay_minus = logClaymeans[1:13]
+Clay_plus = logClaymeans[14:26]
+Clay_minus  # log values, in fact
+Clay_plus
+```
+
+A paired t-test is performed on pitcher plant-absent and pitcher plant-present K soil concentrations.
+```{r}
+t.test(Clay_plus, Clay_minus, paired = TRUE)
+```
+
+Clay depths are not significantly different between
+pitcher-present and pitcher-absent microsites (p=0.13).  
+We can do this again with the non-transformed clay depth values, but there is still no
+evidence of association (p=0.10).
+
+```{r}
+Claymeans = with(soilNPKphys, tapply(Clay_Depth, Microsite:Transect, mean))
+Clay_minus = Claymeans[1:13]
+Clay_plus = Claymeans[14:26]
+t.test(Clay_plus, Clay_minus, paired=TRUE)
+```
+
+A linear model is also constructed as both a supplement and a comparison to the paired t-test. We get practically the same p-values, but we also get to see diagnostic plots
+to confirm that assumptions are met reasonably well.
+
+The linear model is constructed with clay (or log(clay)) as the dependent variable,
+transect as the first factor, and microsite as the second factor.
+We first use the raw clay depth values, not transformed.
+The residuals look fairly normally distributed, but the first residual plot and Q-Q plot
+do not look great.  
+No evidence for association between K and microsite (p=0.09).
+```{r, fig.height=3, fig.width=12}
+fit <- lm(Clay_Depth ~ Transect + Microsite, data=soilNPKphys)
+anova(fit)
+drop1(fit, test="F")
+layout(matrix(1:4,1,4, byrow=T))
+plot(fit)
+```
+
+We can re-do this analysis, using log(clay) values this time.
+Still no evidence of an association (p=0.11).
+The residual and Q-Q plots look better (more homogeneous variance),
+so this analysis is preferred over the analysis of clay (untransformed).
+```{r, fig.height=3, fig.width=12}
+fit <- lm(log(Clay_Depth) ~ Transect + Microsite, data=soilNPKphys)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+Next, we evaluate the effect of clay depth on soil nutrients using a linear model.
+
+The linear model is constructed with <nutrient> (or log(<nutrient>)) as the dependent variable,
+transect as the first factor, and clay depth as the second factor.
+We first use the raw nutrient values, not transformed.
+
+No evidence for association between soil TN and clay depth (p=0.57), soil P and clay depth (p=0.74), or soil K and clay depth (p=0.96).
+
+We can re-do this analysis, using log(<nutrient>) values this time.
+Still no evidence of an association (TN, p=0.85; P, p=0.64; K, p=0.92).
+The residual and Q-Q plots look better (more homogeneous variance),
+so this analysis is preferred over the analysis of clay (untransformed).
+
+```{r}
+soilNPKphys$TN <- soilNPKphys$NO3 + soilNPKphys$NH4
+```
+
+```{r, fig.height=3, fig.width=12}
+fit <- lm(TN ~ Transect + Clay_Depth, data=soilNPKphys)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+```{r, fig.height=3, fig.width=12}
+fit <- lm(P ~ Transect + Clay_Depth, data=soilNPKphys)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+```{r, fig.height=3, fig.width=12}
+fit <- lm(K ~ Transect + Clay_Depth, data=soilNPKphys)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+
+```{r, fig.height=3, fig.width=12}
+fit <- lm(log(TN) ~ Transect + Clay_Depth, data=soilNPKphys)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+
+```{r, fig.height=3, fig.width=12}
+fit <- lm(log(P) ~ Transect + Clay_Depth, data=soilNPKphys)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+```{r, fig.height=3, fig.width=12}
+fit <- lm(log(K) ~ Transect + Clay_Depth, data=soilNPKphys)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+We next explore the interaction between tissue nutrient concentrations and clay content using the same linear model design:
+
+The linear model is constructed with clay (or log(clay)) as the dependent variable,
+transect as the first factor, and microsite as the second factor.
+We first use the raw clay depth values, not transformed.
+No evidence for association between tissue TN and clay depth (p=0.57), tissue P and clay depth (p=0.40), or tissue K and clay depth (p=0.36).
+
+We can re-do this analysis, using log(<nutrient>) values this time.
+Still no evidence of an association (TN, p=0.60; P, p=0.44; K, p=0.38).
+The residual and Q-Q plots look better (more homogeneous variance),
+so this analysis is preferred over the analysis of clay (untransformed).
+
+```{r}
+tissueNPKphys$TN <- tissueNPKphys$NO3 + tissueNPKphys$NH4
+```
+
+```{r, fig.height=3, fig.width=12}
+fit <- lm(TN ~ Transect + Clay_Depth, data=tissueNPKphys)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+```{r, fig.height=3, fig.width=12}
+fit <- lm(P ~ Transect + Clay_Depth, data=tissueNPKphys)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+```{r, fig.height=3, fig.width=12}
+fit <- lm(K ~ Transect + Clay_Depth, data=tissueNPKphys)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+
+
+```{r, fig.height=3, fig.width=12}
+fit <- lm(log(TN) ~ Transect + Clay_Depth, data=tissueNPKphys)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+
+```{r, fig.height=3, fig.width=12}
+fit <- lm(log(P) ~ Transect + Clay_Depth, data=tissueNPKphys)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+```{r, fig.height=3, fig.width=12}
+fit <- lm(log(K) ~ Transect + Clay_Depth, data=tissueNPKphys)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+
+## Crayfish Burrow Exits as a proxy for clay content
+
+Crayfish, *Fallicambarus* spp., abundant in wet pine savannas create distinctive soil changes by constructing "chimney" and "mound" structures as antechambers extensive underground burrows. Both structures (refered to collectively as towers), preferentially constructed based on time of year and weather, consist of silt or clay subsoil and therefore serve as a reasonable approximation of clay content [@brewer1999effects].
+
+Crayfish tower abundance was recorded coincident with clay depth by counting the number of towers visible within a 1 X 1 m PVC square directly to the right of the transect.
+
+We explore tower abundance as a proxy and a possibly more accurate measure for soil clay content compared to relative clay depth by applying on a Poisson regression using number of towers as the dependent variable and Transect and Microsite as the first and second factors respectively.
+
+```{r}
+library(MASS)
+fit <- glm(soilNPKphys$NumTowers ~ soilNPKphys$Transect + soilNPKphys$Microsite, family=poisson)
+summary(fit)
+```
+
+Number of towers shows significant interaction with microsite.
+
+#Height as a possible controller of nutrient limitation
+
+It is possible that since elevated microsites would be subject to greater leeching and would therefore be more nutrient poor compared to microsites lower in the landscape irrespective of soil composition. Height relative to the beginning of the transect was approximated with a range finder according to standard practices. Measurements were taken following the same stratified random schema and coincident as soil and tissue nutrient measurements.
+
+```{r, fig.width=8, fig.height=4}
+layout(matrix(1:2,1,2))
+hist(soilNPKphys$Height, main="", col="tan", breaks=20)
+qqnorm(soilNPKphys$Height, main = '', ylab="Height")
+qqline(soilNPKphys$Height)
+```
+
+The histogram for height concentrations is very slightly right-skewed.
+Q-Q plots were used to test for normality because the Shapiro-Wilk test is not powerful at small sample size (n=31).
+Sample quantiles do not show noticible deviation from Q-Q plot does not suggest any significant deviations from normality.
+No noticible outliers can be seen in the Q-Q plots.
+
+Let's now just visualize the association between height and microsite,
+and also see the pairing by transect.
+```{r}
+layout(matrix(1:2,1,2))
+with(soilNPKphys, interaction.plot(Microsite, Transect, Height, legend=FALSE))
+plot(Height~Microsite, data=soilNPKphys)
+```
+
+
+### statistical analysis
+
+If we analyze the log values, it seems that (at first sight) we can use a t-test
+or a 2-way ANOVA-based method. We will double-check the normality of residuals after
+we get these residuals.
+
+At transects 11, 12, and 13, multiple data points (for soil nutrients only) were collected for pitcher plant-absent microsites.
+It is necessary to average these pitcher plant-absent data points for their respective transects to perform a t-test (which requires a single value per transect per microsite).
+This averaging is not necessary with a 2-way ANOVA-based approach.
+
+A new vector is created specifically for the paired t-test.
+
+Height is not significantly different between
+pitcher-present and pitcher-absent microsites (p=0.11).  
+
+```{r}
+Heightmeans = with(soilNPKphys, tapply(Height, Microsite:Transect, mean))
+Height_minus = Heightmeans[1:13]
+Height_plus = Heightmeans[14:26]
+t.test(Height_plus, Height_minus, paired=TRUE)
+```
+
+A linear model is also constructed as both a supplement and a comparison to the paired t-test. We get practically the same p-values, but we also get to see diagnostic plots
+to confirm that assumptions are met reasonably well.
+
+The linear model is constructed with height as the dependent variable,
+transect as the first factor, and microsite as the second factor.
+We first use the raw height values, not transformed.
+ 
+No evidence for association between K and microsite (p=0.24).
+```{r, fig.height=3, fig.width=12}
+fit <- lm(Height ~ Transect + Microsite, data=soilNPKphys)
+anova(fit)
+drop1(fit, test="F")
+layout(matrix(1:4,1,4, byrow=T))
+plot(fit)
+```
+
+Next, we evaluate the effect of height on soil nutrients using a linear model.
+
+The linear model is constructed with <nutrient> (or log(<nutrient>)) as the dependent variable,
+transect as the first factor, and height as the second factor.
+
+We first use the raw nutrient values, not transformed.
+
+No evidence for association between soil TN and height (p=0.57), soil P and height (p=0.74), or soil K and height (p=0.96).
+
+We can re-do this analysis, using log(<nutrient>) values this time.
+Still no evidence of an association (TN, p=0.85; P, p=0.64; K, p=0.92).
+The residual and Q-Q plots look better (more homogeneous variance),
+so this analysis is preferred over the analysis of height (untransformed).
+
+```{r, fig.height=3, fig.width=12}
+fit <- lm(TN ~ Transect + Height, data=soilNPKphys)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+```{r, fig.height=3, fig.width=12}
+fit <- lm(P ~ Transect + Height, data=soilNPKphys)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+```{r, fig.height=3, fig.width=12}
+fit <- lm(K ~ Transect + Height, data=soilNPKphys)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+
+```{r, fig.height=3, fig.width=12}
+fit <- lm(log(TN) ~ Transect + Height, data=soilNPKphys)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+
+```{r, fig.height=3, fig.width=12}
+fit <- lm(log(P) ~ Transect + Height, data=soilNPKphys)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+```{r, fig.height=3, fig.width=12}
+fit <- lm(log(K) ~ Transect + Height, data=soilNPKphys)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+We next explore the interaction between tissue nutrient concentrations and height using the same linear model design:
+
+The linear model is constructed with <nutrient (or log(nutrient)) as the dependent variable,
+transect as the first factor, and microsite as the second factor.
+We first use the raw nutrient values, not transformed.
+No evidence for association between tissue TN and height (p=0.82), tissue P and height (p=0.37), or tissue K and height (p=0.63).
+
+We can re-do this analysis, using log(<nutrient>) values this time.
+Still no evidence of an association (TN, p=0.87; P, p=0.29; K, p=0.53).
+The residual and Q-Q plots look better (more homogeneous variance),
+so this analysis is preferred over the analysis of height (untransformed).
+
+```{r, fig.height=3, fig.width=12}
+fit <- lm(TN ~ Transect + Height, data=tissueNPKphys)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+```{r, fig.height=3, fig.width=12}
+fit <- lm(P ~ Transect + Height, data=tissueNPKphys)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+```{r, fig.height=3, fig.width=12}
+fit <- lm(K ~ Transect + Height, data=tissueNPKphys)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+
+
+```{r, fig.height=3, fig.width=12}
+fit <- lm(log(TN) ~ Transect + Height, data=tissueNPKphys)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+
+```{r, fig.height=3, fig.width=12}
+fit <- lm(log(P) ~ Transect + Height, data=tissueNPKphys)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+```{r, fig.height=3, fig.width=12}
+fit <- lm(log(K) ~ Transect + Height, data=tissueNPKphys)
+anova(fit)
+drop1(fit, test="F")
+plot(fit)
+```
+
+
+#Species Distribution
+
+Species richness and abundance were measured by estimating percent ground cover of each species along each transect 1) at a random location every 15 m along each transect coincident with clay depth measurements and 2) following the same stratified random schema and coincident soil and tissue nutrient measurements.
+
+Species distribution and productivity is influenced by nutrient limitation, with some plants having special adaptations (e.g. symbiotic N<sub>2</sub> fixation, root secretion of phosphatases, etc.) that favor nutrient-poor microsites [@olde2003species].
+
+Clay content, as a proxy for local anoxia, may also influence species distribution according to species flood tolerance.
+
+We use Nonmetric Multidimensional scaling as the ordination method.
+
+First, we look at the species distributions on sites coincident with clay depth data:
+
+```{r}
+speciesClay = read.csv(file = "speciesAbundanceClay.csv", header = TRUE)
+library(vegan)
+ord <- metaMDS(speciesClay[9:35], distance = "jaccard",k=2,trymax=1000,autotransform=TRUE,expand=FALSE, plot=FALSE)
+scl <- 3 ## scaling == 3
+colvec <- c("red2", "mediumblue")
+plot(ord, type = "n")
+with(speciesNPK, points(ord, display = "sites", col = colvec,
+                      pch = 21, bg = colvec))
+text(ord, display = "sites", cex = 0.8, col = "darkcyan")
+with(speciesNPK, legend("topleft", levels(Microsite), bty = "n",
+                      col = colvec, pch = 21, pt.bg = colvec))
+```
+
+```{r}
+adonis(speciesClay[9:35]~speciesClay$Microsite,method="jaccard")
+```
+
+```{r}
+adonis(speciesNPK[11:31]~speciesNPK$Clay_Depth,method="jaccard")
+```
+
+Species show significant grouping by microsite (p=0.001) but not by clay depth (p=0.793)
+
+Next, we look at the species distributions on sites coincident with clay depth data:
+
+```{r}
+speciesNPK = read.csv(file = "speciesAbundanceNPK.csv", header = TRUE)
+library(vegan)
+ord <- metaMDS(speciesNPK[11:31], distance = "jaccard",k=2,trymax=1000,autotransform=TRUE,expand=FALSE, plot=FALSE)
+scl <- 3 ## scaling == 3
+colvec <- c("red2", "mediumblue")
+plot(ord, type = "n")
+with(speciesNPK, points(ord, display = "sites", col = colvec,
+                      pch = 21, bg = colvec))
+text(ord, display = "sites", cex = 0.8, col = "darkcyan")
+with(speciesNPK, legend("topleft", levels(Microsite), bty = "n",
+                      col = colvec, pch = 21, pt.bg = colvec))
+```
+
+```{r}
+adonis(speciesNPK[11:31]~speciesNPK$Microsite,method="jaccard")
+```
+
+```{r}
+adonis(speciesNPK[11:31]~speciesNPK$NH4,method="jaccard")
+```
+
+```{r}
+adonis(speciesNPK[11:31]~speciesNPK$Clay_Depth,method="jaccard")
+```
+
+Species do not show significant grouping by clay depth (p=.786) or ammonium (p=0.071) but do show significant grouping by microsite (p=0.001)
+
+```{r echo=FALSE}
+sessionInfo()
+```
+
+# References
+
+
+
+
