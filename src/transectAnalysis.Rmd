@@ -1066,13 +1066,13 @@ plot(fit)
 ```
 
 ```{r}
-soilNPKphys = read.csv(file = "/home/sparks/Desktop/S_alata_Microdistribution/Microdistribution/analysis/cleaned/soilNPKphys.csv", header = TRUE)
+soilNPKphys = read.csv(file = "soilNPKphys.csv", header = TRUE)
 soilNPKphys$Transect = factor(soilNPKphys$Transect) # interpreted as factor, not numerical values
 str(soilNPKphys)
 ```
 
 ```{r}
-tissueNPKphys = read.csv(file = "/home/sparks/Desktop/S_alata_Microdistribution/Microdistribution/analysis/cleaned/tissueNPKphys.csv", header = TRUE)
+tissueNPKphys = read.csv(file = "tissueNPKphys.csv", header = TRUE)
 tissueNPKphys$Transect = factor(tissueNPKphys$Transect) # interpreted as factor, not numerical values
 str(tissueNPKphys)
 ```
@@ -1254,9 +1254,6 @@ Still no evidence of an association (TN, p=0.60; P, p=0.44; K, p=0.38).
 The residual and Q-Q plots look better (more homogeneous variance),
 so this analysis is preferred over the analysis of clay (untransformed).
 
-```{r}
-tissueNPKphys$TN <- tissueNPKphys$NO3 + tissueNPKphys$NH4
-```
 
 ```{r, fig.height=3, fig.width=12}
 fit <- lm(TN ~ Transect + Clay_Depth, data=tissueNPKphys)
@@ -1518,10 +1515,10 @@ ord <- metaMDS(speciesClay[9:35], distance = "jaccard",k=2,trymax=1000,autotrans
 scl <- 3 ## scaling == 3
 colvec <- c("red2", "mediumblue")
 plot(ord, type = "n")
-with(speciesNPK, points(ord, display = "sites", col = colvec,
+with(speciesClay, points(ord, display = "sites", col = colvec,
                       pch = 21, bg = colvec))
 text(ord, display = "sites", cex = 0.8, col = "darkcyan")
-with(speciesNPK, legend("topleft", levels(Microsite), bty = "n",
+with(speciesClay, legend("topleft", levels(Microsite), bty = "n",
                       col = colvec, pch = 21, pt.bg = colvec))
 ```
 
@@ -1530,7 +1527,7 @@ adonis(speciesClay[9:35]~speciesClay$Microsite,method="jaccard")
 ```
 
 ```{r}
-adonis(speciesNPK[11:31]~speciesNPK$Clay_Depth,method="jaccard")
+adonis(speciesClay[11:31]~speciesClay$Clay_cm,method="jaccard")
 ```
 
 Species show significant grouping by microsite (p=0.001) but not by clay depth (p=0.793)
