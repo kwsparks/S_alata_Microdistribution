@@ -1522,8 +1522,7 @@ plot(ord, type = "n")
 with(speciesClay, points(ord, display = "sites", col = colvec,
                       pch = 21, bg = colvec))
 text(ord, display = "sites", cex = 0.8, col = "darkcyan")
-with(speciesClay, legend("topleft", levels(Microsite), bty = "n",
-                      col = colvec, pch = 21, pt.bg = colvec))
+with(speciesClay, points(ord, display="sites", col=colvec[as.factor(Microsite)], pch=21, bg=colvec[Microsite]))
 ```
 
 ```{r}
@@ -1549,8 +1548,7 @@ plot(ord, type = "n")
 with(speciesNPK, points(ord, display = "sites", col = colvec,
                       pch = 21, bg = colvec))
 text(ord, display = "sites", cex = 0.8, col = "darkcyan")
-with(speciesNPK, legend("topleft", levels(Microsite), bty = "n",
-                      col = colvec, pch = 21, pt.bg = colvec))
+with(speciesClay, points(ord, display="sites", col=colvec[as.factor(Microsite)], pch=21, bg=colvec[Microsite]))
 ```
 
 ```{r}
