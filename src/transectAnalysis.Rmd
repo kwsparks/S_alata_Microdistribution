@@ -1548,7 +1548,7 @@ plot(ord, type = "n")
 with(speciesNPK, points(ord, display = "sites", col = colvec,
                       pch = 21, bg = colvec))
 text(ord, display = "sites", cex = 0.8, col = "darkcyan")
-with(speciesClay, points(ord, display="sites", col=colvec[as.factor(Microsite)], pch=21, bg=colvec[Microsite]))
+with(speciesNPK, points(ord, display="sites", col=colvec[as.factor(Microsite)], pch=21, bg=colvec[Microsite]))
 ```
 
 ```{r}
